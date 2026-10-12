@@ -1,38 +1,26 @@
-const base_url = "https://api.weatherapi.com/v1/"
+const base_url = "https://api.weatherapi.com/v1/";
 
 async function FetchWeatherForecast(apiKey, location, URL) {
     try {
-        // send a request to weatherAPI
-        const response = await fetch(`${URL}current.json?key=${apiKey}&q=${location}&days=1&aqi=no&alerts=no/`);
-        
-        // check if reponse is successful
+        const response = await fetch(`${URL}current.json?key=${encodeURIComponent(apiKey)}&q=${encodeURIComponent(location)}&days=1&aqi=no&alerts=no`);
         if (!response.ok) {
             throw new Error(`HTTPS error. Status: ${response.status}`);
         }
 
-        // parse the stream fo data returned from the json call
         const data = await response.json();
-        console.log(data);
+        document.getElementById("location").textContent = location;
+        document.getElementById("temperature").textContent = `${data.current.temp_c}°C`;
+        document.getElementById("conditions").textContent = data.current.condition.text;
 
-        // get elements from the parsed json to display tempaerature
-        const tempObject = data.current;
-        const temperature = data.current.temp_c; // gets temperature in celcius
-        const conditionText = data.current.condition.text; // gets conditions like sunny, cloudy and more
-        
-        document.getElementById("weather").innerHTML = `<strong>conditions </strong> <br>: 
-        temperature: ${temperature}C <br>
-        weather: ${conditionText}<br>
-        location: ${location} <br> `;
-        
         return data;
     }
     catch (error) {
-        // handle errors
         console.error("fetch failed:", error);
+        document.getElementById("weather-error").textContent = "Unable to load weather data.";
     }
 }
 
-location1 = "montreal";
+const location1 = "montreal";
 
 const ApiKey = prompt("please enter your api key: ")
 

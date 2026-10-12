@@ -60,7 +60,15 @@ body {
     color: var(--sandstone);
 }
 
+.content {
+    display:grid;
+    grid-template-columns: 1fr 300px;
+    padding: 20px;
+    margin: 20px;
+}
+
 .weather {
+    background-color: white;
     float: left;
     display: flex;
     flex-direction: column;
@@ -71,7 +79,3 @@ body {
     color: var(--forest-green);
 }
 
-#content {
-    display:grid;
-    grid-template-columns: 1fr 300px;
-}

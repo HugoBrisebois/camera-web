@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <title>Camera web helper</title>
         <link rel="stylesheet" href="style.css">
-        <script src="scripts.js"></script>
+        <script src="scripts.js" defer></script>
     </head>
     <body>
         <header>
@@ -19,9 +19,26 @@
             </nav>
         </header>
 
-
         <div class="content">
-            <div id="weather"></div>
+            <div id="weather">
+                <table>
+                    <tbody>
+                        <tr>
+                            <th scope="row">Location: </th>
+                            <td id="location"></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Temperature: </th>
+                            <td id="temperature"></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Conditions: </th>
+                            <td id="conditions"></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p id="weather-error" role="status"></p>
+            </div>
         </div>
     </body>
 </html>
