@@ -1,0 +1,53 @@
+/* Global reset & base styles*/
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segeo UI', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: darkgreen;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between; /*pushes logo to the left, links to right*/
+    align-items: center;
+    background-color: #2d4a28;
+    padding: 15px 30px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+/*logo styling*/
+.logo a {
+    font-size: 24px;
+    font-weight: bold;
+    color: #000000;
+    text-decoration: none;
+}
+
+/*nav links wrappre*/
+.nav-links {
+    display: flex;
+    list-style: none;
+}
+
+.nav-links li {
+    padding: 0;
+}
+
+.nav-links a {
+    padding: 5;
+    color: #fff;
+    text-decoration: none;
+    font-size: 18px;
+    transition: color 0.3s ease; /*smooth transition for hover effect*/
+}
+
+/*hover state*/
+nav-links a:hover {
+    color: #00bcd4
+}
