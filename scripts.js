@@ -7,7 +7,7 @@ async function FetchWeatherForecast(apiKey, location, URL) {
         
         // check if reponse is successful
         if (!response.ok) {
-            throw new Error(`HTTPS error. Status: ${respone.status}`);
+            throw new Error(`HTTPS error. Status: ${response.status}`);
         }
 
         // parse the stream fo data returned from the json call
@@ -19,10 +19,10 @@ async function FetchWeatherForecast(apiKey, location, URL) {
         const temperature = data.current.temp_c; // gets temperature in celcius
         const conditionText = data.current.condition.text; // gets conditions like sunny, cloudy and more
         
-        document.getElementById("weather").textContent = `conditions: 
-        temperature: ${temperature}C
-        weather: ${conditionText}
-        location: ${location} `;
+        document.getElementById("weather").innerHTML = `<strong>conditions </strong> <br>: 
+        temperature: ${temperature}C <br>
+        weather: ${conditionText}<br>
+        location: ${location} <br> `;
         
         return data;
     }
@@ -32,8 +32,8 @@ async function FetchWeatherForecast(apiKey, location, URL) {
     }
 }
 
-ApiKey = "";
 location1 = "montreal";
 
+const ApiKey = prompt("please enter your api key: ")
 
 FetchWeatherForecast(ApiKey, location1, base_url);

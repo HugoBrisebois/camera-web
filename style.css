@@ -1,3 +1,10 @@
+:root {
+    --forest-green: #1A3325;
+    --warm-ivory: #F4F1EA;
+    --sage-green: #8EA38C;
+    --sandstone: #D4A373;
+}
+
 /* Global reset & base styles*/
 * {
     margin: 0;
@@ -7,14 +14,15 @@
 
 body {
     font-family: 'Segeo UI', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: darkgreen;
+    background-color: var(--sage-green);
+    color: var(--forest-green);
 }
 
 .navbar {
     display: flex;
     justify-content: space-between; /*pushes logo to the left, links to right*/
     align-items: center;
-    background-color: #2d4a28;
+    background-color: var(--forest-green);
     padding: 15px 30px;
     position: sticky;
     top: 0;
@@ -25,7 +33,7 @@ body {
 .logo a {
     font-size: 24px;
     font-weight: bold;
-    color: #000000;
+    color: var(--warm-ivory);
     text-decoration: none;
 }
 
@@ -40,14 +48,30 @@ body {
 }
 
 .nav-links a {
-    padding: 5;
-    color: #fff;
+    padding: 5px;
+    color: var(--warm-ivory);
     text-decoration: none;
     font-size: 18px;
     transition: color 0.3s ease; /*smooth transition for hover effect*/
 }
 
 /*hover state*/
-nav-links a:hover {
-    color: #00bcd4
+.nav-links a:hover {
+    color: var(--sandstone);
+}
+
+.weather {
+    float: left;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    margin-left: auto;
+    background-color: var(--warm-ivory);
+    color: var(--forest-green);
+}
+
+#content {
+    display:grid;
+    grid-template-columns: 1fr 300px;
 }
