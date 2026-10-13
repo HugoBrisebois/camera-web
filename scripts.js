@@ -25,3 +25,12 @@ const location1 = "montreal";
 const ApiKey = prompt("please enter your api key: ")
 
 FetchWeatherForecast(ApiKey, location1, base_url);
+
+
+function setCookie(name, apiKey) {
+    let apiKeyCookie = `${name}=${encodeURIComponent(apiKey)}; path=/; max-age=31536000`; // 1 year
+    document.cookie = apiKeyCookie;
+}
+
+setCookie("weatherApiKey", ApiKey);
+
