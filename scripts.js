@@ -22,14 +22,13 @@ async function FetchWeatherForecast(apiKey, location, URL) {
 
 const location1 = "montreal";
 
-const ApiKey = prompt("please enter your api key: ")
 
-FetchWeatherForecast(ApiKey, location1, base_url);
 
 
 function setCookie(name, apiKey) {
     let apiKeyCookie = `${name}=${encodeURIComponent(apiKey)}; path=/; max-age=31536000`; // 1 year
     document.cookie = apiKeyCookie;
+    console.log(`Cookie set: ${apiKeyCookie}`);
 }
 
 function readCookie(name)  {
@@ -37,15 +36,18 @@ function readCookie(name)  {
     for (let cookie of cookies) {
         const [cookieName, cookieValue] = cookie.trim().split('=');
         if (cookieName === name) {
+            console.log(`Cookie read: ${cookieName}=${cookieValue}`);
             return decodeURIComponent(cookieValue);
         }
     }
     return null;
 }
 
-setCookie("weatherApiKey", ApiKey);
-const savedApiKey = readCookie("weatherApiKey");
-
-if (savedApiKey) {
+if (savedApiKey = readCookie("weatherAPIKEY")) {
     FetchWeatherForecast(savedApiKey, location1, base_url);
+}
+else {
+    console.error("No API key found in cookies.");
+    const ApiKey = prompt("please enter your api key: "); 
+    setCookie("weatherAPIKEY", ApiKey);
 }
