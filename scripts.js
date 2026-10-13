@@ -32,5 +32,16 @@ function setCookie(name, apiKey) {
     document.cookie = apiKeyCookie;
 }
 
-setCookie("weatherApiKey", ApiKey);
+function readCookie(name)  {
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+        const [cookieName, cookieValue] = cookie.trim().split('=');
+        if (cookieName === name) {
+            return decodeURIComponent(cookieValue);
+        }
+    }
+    return null;
+}
 
+setCookie("weatherApiKey", ApiKey);
+const savedApiKey = readCookie("weatherApiKey");
