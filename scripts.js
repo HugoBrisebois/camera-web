@@ -45,3 +45,7 @@ function readCookie(name)  {
 
 setCookie("weatherApiKey", ApiKey);
 const savedApiKey = readCookie("weatherApiKey");
+
+if (savedApiKey) {
+    FetchWeatherForecast(savedApiKey, location1, base_url);
+}
