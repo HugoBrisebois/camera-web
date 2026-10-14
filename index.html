@@ -19,25 +19,54 @@
             </nav>
         </header>
 
-        <div class="content">
-            <div id="weather">
-                <table>
-                    <tbody>
-                        <tr>
-                            <th scope="row">Location: </th>
-                            <td id="location"></td>
-                        </tr>
-                        <tr>
-                            <th scope="row">Temperature: </th>
-                            <td id="temperature"></td>
-                        </tr>
-                        <tr>
-                            <th scope="row">Conditions: </th>
-                            <td id="conditions"></td>
-                        </tr>
-                    </tbody>
-                </table>
-                <p id="weather-error" role="status"></p>
+
+        <div class="setup-view" class="card"> 
+            <h3>Setup</h3>
+            <p>Your API key will be encrypted locally in your browser before being saved to a cookie</p>
+
+            <label for="api-key">Create a Master Password (to lock the api key)</label>
+            <input type="password" id="api-key" placeholder="apikey" required>
+
+            <label for="setup-password">Create a Master Password</label>
+            <input type="password" id="setup-password" placeholder="Choose a strong password" required>
+
+            <button onclick="handleSave()">Encrypt & Save to Cookie</button>
+            <p id="setup-message"></p>
+        </div>
+
+        <div class="unlock-view" class="card" style="display: none;">
+            <h3>Unlock your workspace</h3>
+            <p>An encryted cookie was found. enter you password to unlock:</p>
+
+            <label for="unlock-password">Enter your master password:</label>
+            <input type="password" id="unlock-password" placeholder="Enter password">
+
+            <button onclick="handleUnlock()">Unlock Key</button>
+            <p id="unlock-message"></p>
+        </div>
+
+
+        <div id="dashboard-view" class="card" style="display:none;">
+            <div class="content">
+                <div id="weather">
+                    <table>
+                        <tbody>
+                            <tr>
+                                <th scope="row">Location: </th>
+                                <td id="location"></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Temperature: </th>
+                                <td id="temperature"></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Conditions: </th>
+                                <td id="conditions"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p id="weather-error" role="status"></p>
+                </div>
             </div>
         </div>
     </body>

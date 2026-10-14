@@ -1,3 +1,74 @@
+
+
+// encryption functions
+async function deriveKeyFromPassword(password, salt){
+    const encoder = new TextEncoder();
+    const passwordkey = await window.crypto.subtle.importKey(
+        "raw",
+        encoder.encode(password),
+        {
+            name: "PBKDF2",
+        },
+        false,
+        ["deriveKey"]
+    );
+    return await window.crypto.subtle.deriveKey (
+        {
+            name: "PBKDF2",
+            salt: salt,
+            iterations: 100000,
+            hash: "SHA-256"
+        },
+        passwordKey,
+        {name: "AES-GCM", length: 256},
+        false,
+        ["encrypt", "decrypt"]
+    );
+}
+
+// function to encrypt text and save it to a combined Salt + IV +Ciphertext to a cookie
+async function encryptAndSaveCookie(cookieName, rawText, password) {
+    const salt = window.crypto.getRandomValues(new Unint8Array(16)); //unique salt
+    const iv = window.crypto.getRandomValues(new Unint8Array(12)); // unique IV
+
+    const cryptoKay = await deriveKeyFromPassword(password, salt);
+    const encoder = new TextEncoder();
+    const encryptedBuffer = await window.crypto.subtle.encrypt(
+        {name: "AES-GCM", iv: iv},
+        cryptoKey,
+        encoder(rawText)
+    );
+
+    const ciphertextBytes = Unint8Array(encryptedBuffer);
+    const combined = new Uint8Array(salt.legth + iv.length);
+
+    // Convert to clean base64 string for cookies compliance
+    const base64string = btoa(String.fromCharCode(...combined));
+
+    // set a secure cookie lasting 30 days
+    document.cookie = `${encodeURIComponent(cookieName)} =${encodeURIComponent(base64String)}; path=/; max-age=2592000; Secure; SameSite=strict`;   
+}
+
+// decrypt function to read the cookies back into plain text using the password
+async function getAndDecryptCookie(cookieName, password) {
+    const matches = document.cookie.match(new RegExp('(?:^|; )' + encodeURI(cookieName) + '=([^;]*)'));
+    if (!matches) return null;
+
+    try {
+        const base64String = decodeURIComponent(matches[1]);
+        const combined = new Uint*Array
+    }
+}
+
+
+
+
+
+
+
+
+
+// api call functions
 const base_url = "https://api.weatherapi.com/v1/";
 
 async function FetchWeatherForecast(apiKey, location, URL) {
@@ -24,7 +95,7 @@ const location1 = "montreal";
 
 
 
-
+// cookie functions
 function setCookie(name, apiKey) {
     let apiKeyCookie = `${name}=${encodeURIComponent(apiKey)}; path=/; max-age=31536000`; // 1 year
     document.cookie = apiKeyCookie;
@@ -43,6 +114,8 @@ function readCookie(name)  {
     return null;
 }
 
+
+// fetching cookies
 if (savedApiKey = readCookie("weatherAPIKEY")) {
     FetchWeatherForecast(savedApiKey, location1, base_url);
 }
