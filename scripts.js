@@ -1,4 +1,5 @@
-
+// variables for testing and debugging location data
+const location1 = "montreal";
 
 // encryption functions
 async function deriveKeyFromPassword(password, salt){
@@ -82,9 +83,76 @@ let decrytedApiKey = null;
 const COOKIE_NAME = "encrypted_api_vault";
 
 // check cookie presence on page load
+function checkVaultStatus() {
+    const hasCookie = document.cookie.includes(Cookie_NAME + '=');
+    document.getElementById("setup-view").style.displat = hasCookie ? "none" : "block";
+    document.getElementById("unlock-view").style.display = hasCookie ? "block" : "none";
+    document.getElementById("dashboard-view").style.display = "none";
+}
 
 
+async function handleSave() {
+    const apiKey = document.getElementById("api-key").value;
+    const password = document.getElementById("setup-password").value;
+    const msg = document.getElementById("setup-message");
 
+    if (!apiKey || !password) {
+        msg.classNAme = "error";
+        msg.innerText = "Please fill out both fields";
+        return;
+    }
+
+    try {
+        await encryptAndSaveCookie(COOKIE_NAME, apiKey, password);
+        // put the key inte a volatie system memory for immediate use
+        decryptApiKey = apiKey;
+
+        document.getElementById("setup-password").value = "";
+        ducument.getElementById("api-key").value = "";
+
+        showDashboard();
+    } catch (e) {
+        msg.className = "error";
+        msg.innerText = "Encryption error occurded";
+    }
+}
+
+
+async function handleUnlock() {
+    const password = document.getElementById("unlock-password").value;
+    const msg = document.getElementById("unlock-message");
+
+    try {
+        // attempt to decrypt the cookie string
+        decryptApiKey = await getAndDecryptCookie(COOKIE_NAME, password );
+
+        if (decryptApiKey) {
+            document.getElementById("unlock-password").value = "";
+            showDashboard();
+        }
+    } catch (err) {
+        msg.className = "error";
+        msg.innerText = "Incorrect password. try again";
+    }
+}
+
+
+function showDashboard() {
+    document.getElementById("setup-view").style.display = "none";
+    document.getElementById("unlock-view").style.display = "none";
+    document.getElementById("dashboard-view").style.display = "block";
+
+    console.log("Your active api key is ready for fetch requests: " , decryptedApiKey);
+
+    // TODO: call api fetch function here with decryptedApiKey variable
+}
+
+function handleLogout() {
+    // clear the keys and cookies completey
+    decryptedApiKey = null;
+    document.getElementById("unlock-message").innerText = "";
+    checkVaultStatus();
+}
 
 // api call functions
 const base_url = "https://api.weatherapi.com/v1/";
@@ -109,36 +177,5 @@ async function FetchWeatherForecast(apiKey, location, URL) {
     }
 }
 
-const location1 = "montreal";
 
 
-
-// cookie functions
-function setCookie(name, apiKey) {
-    let apiKeyCookie = `${name}=${encodeURIComponent(apiKey)}; path=/; max-age=31536000`; // 1 year
-    document.cookie = apiKeyCookie;
-    console.log(`Cookie set: ${apiKeyCookie}`);
-}
-
-function readCookie(name)  {
-    const cookies = document.cookie.split(';');
-    for (let cookie of cookies) {
-        const [cookieName, cookieValue] = cookie.trim().split('=');
-        if (cookieName === name) {
-            console.log(`Cookie read: ${cookieName}=${cookieValue}`);
-            return decodeURIComponent(cookieValue);
-        }
-    }
-    return null;
-}
-
-
-// fetching cookies
-if (savedApiKey = readCookie("weatherAPIKEY")) {
-    FetchWeatherForecast(savedApiKey, location1, base_url);
-}
-else {
-    console.error("No API key found in cookies.");
-    const ApiKey = prompt("please enter your api key: "); 
-    setCookie("weatherAPIKEY", ApiKey);
-}
