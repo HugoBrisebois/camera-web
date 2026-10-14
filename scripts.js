@@ -39,8 +39,8 @@ async function encryptAndSaveCookie(cookieName, rawText, password) {
         encoder(rawText)
     );
 
-    const ciphertextBytes = Unint8Array(encryptedBuffer);
-    const combined = new Uint8Array(salt.legth + iv.length);
+    const ciphertextBytes = new Uint8Array(encryptedBuffer);
+    const combined = new Uint8Array(salt.length + iv.length + ciphertextBytes.length);
 
     // Convert to clean base64 string for cookies compliance
     const base64string = btoa(String.fromCharCode(...combined));
@@ -56,14 +56,32 @@ async function getAndDecryptCookie(cookieName, password) {
 
     try {
         const base64String = decodeURIComponent(matches[1]);
-        const combined = new Uint*Array
+        const combined = new Uint8Array(atob(base64String).split("").map(c => c.charCodeAt(0)));
+
+        const salt = combined.slice(0, 16);
+        const iv = combined.slice(16, 28);
+        const ciphertext = combined.slice(28);
+
+        const cryptoKey = await deriveKeyFromPassword(password, salt);
+        const decryptedBuffer = await window.crypto.subtle.decrypt(
+            {name: "AES-GCM", iv: iv},
+            cryptoKey,
+            ciphertext
+        );
+
+        return new TextDecoder().decode(decryptedBuffer);
+    } catch (err) {
+        throw new Error("invalid password or corrupted cookie data");
     }
 }
 
 
+// app flowand ui control functions
 
+let decrytedApiKey = null;
+const COOKIE_NAME = "encrypted_api_vault";
 
-
+// check cookie presence on page load
 
 
 
