@@ -141,7 +141,9 @@ function showDashboard() {
     document.getElementById("dashboard-view").style.display = "block";
     
     console.log("Your active API Key is ready for fetch requests:", decryptedApiKey);
-    // You can now execute your API calls here using the global `decryptedApiKey` variable
+    
+    // call the fetchWeatherForecast function with the decrypted API key and location
+    fetchWeatherForecast(decryptedApiKey, location1, base_url); // Fetch weather data if API key is available
 }
 
 function handleLogOut() {
@@ -176,3 +178,5 @@ async function FetchWeatherForecast(apiKey, location, URL) {
 
 
 checkVaultStatus(); // Initialize the app state on page load
+
+
