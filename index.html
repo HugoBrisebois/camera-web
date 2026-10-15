@@ -20,11 +20,11 @@
         </header>
 
 
-        <div class="setup-view" class="card"> 
+        <div id="setup-view" class="card"> 
             <h3>Setup</h3>
             <p>Your API key will be encrypted locally in your browser before being saved to a cookie</p>
 
-            <label for="api-key">Create a Master Password (to lock the api key)</label>
+            <label for="api-key">API Key</label>
             <input type="password" id="api-key" placeholder="apikey" required>
 
             <label for="setup-password">Create a Master Password</label>
@@ -34,7 +34,7 @@
             <p id="setup-message"></p>
         </div>
 
-        <div class="unlock-view" class="card" style="display: none;">
+        <div id="unlock-view" class="card" style="display: none;">
             <h3>Unlock your workspace</h3>
             <p>An encryted cookie was found. enter you password to unlock:</p>
 
