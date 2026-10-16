@@ -1,6 +1,32 @@
 // variables for testing and debugging location data
 const location1 = "montreal";
 
+// api call functions
+const base_url = "https://api.weatherapi.com/v1/";
+
+async function FetchWeatherForecast(apiKey, location, URL) {
+    try {
+        const response = await fetch(`${URL}current.json?key=${encodeURIComponent(apiKey)}&q=${encodeURIComponent(location)}&days=1&aqi=no&alerts=no`);
+        if (!response.ok) {
+            throw new Error(`HTTPS error. Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        document.getElementById("location").textContent = location;
+        document.getElementById("temperature").textContent = `${data.current.temp_c}°C`;
+        document.getElementById("conditions").textContent = data.current.condition.text;
+        document.getElementById("photo").textContent = data.current.condition.text.includes("rain") ? "Rainy conditions, consider street photography" : "Good conditions for photography";
+
+        return data;
+    }
+    catch (error) {
+        console.error("fetch failed:", error);
+        document.getElementById("weather-error").textContent = "Unable to load weather data.";
+    }
+}
+
+
+
 // encryption functions
 async function deriveKeyFromPassword(password, salt) {
   const encoder = new TextEncoder();
@@ -58,6 +84,7 @@ async function getAndDecryptCookie(cookieName, password) {
   if (!matches) return null;
 
   try {
+    // decode from base64 into a binary array
     const base64String = decodeURIComponent(matches[1]);
     const combined = new Uint8Array(atob(base64String).split("").map(c => c.charCodeAt(0)));
 
@@ -68,6 +95,7 @@ async function getAndDecryptCookie(cookieName, password) {
     const cryptoKey = await deriveKeyFromPassword(password, salt);
     const decryptedBuffer = await window.crypto.subtle.decrypt(
       { name: "AES-GCM", iv: iv },
+      cryptoKey,
       ciphertext
     );
 
@@ -108,9 +136,10 @@ async function handleSave() {
         decryptedApiKey = apiKey; 
         
         document.getElementById("setup-password").value = "";
+        console.log(`password: ${password} | apiKey: ${apiKey} | decryptedApiKey: ${decryptedApiKey}`);
         document.getElementById("api-key").value = "";
         
-        showDashboard();
+        await showDashboard();
     } catch(e) {
         msg.className = "error";
         msg.innerText = "Encryption error occurred.";
@@ -130,12 +159,13 @@ async function handleUnlock() {
             showDashboard();
         }
     } catch (err) {
+        console.error("Decryption failed:", err);
         msg.className = "error";
         msg.innerText = "Incorrect Password. Try again.";
     }
 }
 
-function showDashboard() {
+async function showDashboard() {
     document.getElementById("setup-view").style.display = "none";
     document.getElementById("unlock-view").style.display = "none";
     document.getElementById("dashboard-view").style.display = "block";
@@ -143,7 +173,7 @@ function showDashboard() {
     console.log("Your active API Key is ready for fetch requests:", decryptedApiKey);
     
     // call the fetchWeatherForecast function with the decrypted API key and location
-    fetchWeatherForecast(decryptedApiKey, location1, base_url); // Fetch weather data if API key is available
+    await FetchWeatherForecast(decryptedApiKey, location1, base_url); // Fetch weather data if API key is available
 }
 
 function handleLogOut() {
@@ -153,28 +183,7 @@ function handleLogOut() {
     checkVaultStatus();
 }
 
-// api call functions
-const base_url = "https://api.weatherapi.com/v1/";
 
-async function FetchWeatherForecast(apiKey, location, URL) {
-    try {
-        const response = await fetch(`${URL}current.json?key=${encodeURIComponent(apiKey)}&q=${encodeURIComponent(location)}&days=1&aqi=no&alerts=no`);
-        if (!response.ok) {
-            throw new Error(`HTTPS error. Status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        document.getElementById("location").textContent = location;
-        document.getElementById("temperature").textContent = `${data.current.temp_c}°C`;
-        document.getElementById("conditions").textContent = data.current.condition.text;
-
-        return data;
-    }
-    catch (error) {
-        console.error("fetch failed:", error);
-        document.getElementById("weather-error").textContent = "Unable to load weather data.";
-    }
-}
 
 
 checkVaultStatus(); // Initialize the app state on page load
