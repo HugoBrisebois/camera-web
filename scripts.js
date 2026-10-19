@@ -178,7 +178,16 @@ async function showDashboard() {
     
     // call the fetchWeatherForecast function with the decrypted API key and location
     await FetchWeatherForecast(decryptedApiKey, location1, base_url); // Fetch weather data if API key is available
+    
     const cameraBody = await read_camera('CameraBody');
+    const cameraLens = await read_lens('CameraLens');
+    const cameraContainer = document.getElementById("Camera-equipment");
+    cameraContainer.innerHTML = `
+      <h3>Your camera body and lens</h3>
+      <p><strong>Camera Body:</strong> ${cameraBody ? decodeURIComponent(cameraBody) : 'Not set'}</p>
+      <p><strong>Camera Body:</strong> ${cameraLens ? decodeURIComponent(cameraLens) : 'Not set'}</p>
+    `
+
   }
 
 function handleLogOut() {
@@ -196,6 +205,16 @@ async function read_camera(camera) {
   if (camera_body) {
     console.log(camera_body);
     return camera_body.value;
+  }
+  return null;
+}
+
+async function read_lens(lens) {
+  // store the camera model and put it in a a cookie
+  const camera_lens = await cookieStore.get(lens);
+  if (camera_lens) {
+    console.log(camera_lens);
+    return camera_lens.value;
   }
   return null;
 }
