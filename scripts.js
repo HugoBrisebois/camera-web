@@ -15,8 +15,6 @@ async function FetchWeatherForecast(apiKey, location, URL) {
         document.getElementById("location").textContent = location;
         document.getElementById("temperature").textContent = `${data.current.temp_c}°C`;
         document.getElementById("conditions").textContent = data.current.condition.text;
-        document.getElementById("photo").textContent = data.current.condition.text.includes("rain") ? "Rainy conditions, consider street photography" : "Good conditions for photography";
-
         return data;
     }
     catch (error) {
@@ -52,7 +50,7 @@ async function deriveKeyFromPassword(password, salt) {
   );
 }
 
-// function to encrypt text and save it to a combined Salt + IV +Ciphertext to a cookie
+// function to encrypt text and save it to a combined Salt + IV + Ciphertext to a cookie
 async function encryptAndSaveCookie(cookieName, rawText, password) {
   const salt = window.crypto.getRandomValues(new Uint8Array(16)); // Unique salt
   const iv = window.crypto.getRandomValues(new Uint8Array(12));   // Unique IV
@@ -122,6 +120,8 @@ function checkVaultStatus() {
 async function handleSave() {
     const apiKey = document.getElementById("api-key").value;
     const password = document.getElementById("setup-password").value;
+    const camera_body = document.getElementById("CameraBody").value;
+    const camera_lens = document.getElementById("CameraLens").value;
     const msg = document.getElementById("setup-message");
 
     if (!apiKey || !password) {
@@ -136,7 +136,6 @@ async function handleSave() {
         decryptedApiKey = apiKey; 
         
         document.getElementById("setup-password").value = "";
-        console.log(`password: ${password} | apiKey: ${apiKey} | decryptedApiKey: ${decryptedApiKey}`);
         document.getElementById("api-key").value = "";
         
         await showDashboard();
@@ -182,6 +181,13 @@ function handleLogOut() {
     document.getElementById("unlock-message").innerText = "";
     checkVaultStatus();
 }
+
+// functions for camera brand in a cookie 
+
+function store_camera(camera) {
+  // store the camera model and put it in a a cookie
+  
+} 
 
 
 
