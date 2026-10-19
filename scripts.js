@@ -121,7 +121,6 @@ async function handleSave() {
     const apiKey = document.getElementById("api-key").value;     
     const password = document.getElementById("setup-password").value;     
     
-    // FIX: Get the element value first, then encode it for the cookie
     const camera_body = encodeURIComponent(document.getElementById("CameraBody").value);     
     const camera_lens = encodeURIComponent(document.getElementById("CameraLens").value);     
     const msg = document.getElementById("setup-message");      
@@ -179,7 +178,8 @@ async function showDashboard() {
     
     // call the fetchWeatherForecast function with the decrypted API key and location
     await FetchWeatherForecast(decryptedApiKey, location1, base_url); // Fetch weather data if API key is available
-}
+    const cameraBody = await read_camera('CameraBody');
+  }
 
 function handleLogOut() {
     // Completely clear the key from active browser memory
@@ -190,10 +190,15 @@ function handleLogOut() {
 
 // functions for camera brand in a cookie 
 
-function store_camera(camera) {
+async function read_camera(camera) {
   // store the camera model and put it in a a cookie
-  
-} 
+  const camera_body = await cookieStore.get(camera);
+  if (camera_body) {
+    console.log(camera_body);
+    return camera_body.value;
+  }
+  return null;
+}
 
 
 
