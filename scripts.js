@@ -117,33 +117,39 @@ function checkVaultStatus() {
     document.getElementById("dashboard-view").style.display = "none";
 }
 
-async function handleSave() {
-    const apiKey = document.getElementById("api-key").value;
-    const password = document.getElementById("setup-password").value;
-    const camera_body = document.getElementById("CameraBody").value;
-    const camera_lens = document.getElementById("CameraLens").value;
-    const msg = document.getElementById("setup-message");
+async function handleSave() {     
+    const apiKey = document.getElementById("api-key").value;     
+    const password = document.getElementById("setup-password").value;     
+    
+    // FIX: Get the element value first, then encode it for the cookie
+    const camera_body = encodeURIComponent(document.getElementById("CameraBody").value);     
+    const camera_lens = encodeURIComponent(document.getElementById("CameraLens").value);     
+    const msg = document.getElementById("setup-message");      
 
-    if (!apiKey || !password) {
-        msg.className = "error";
-        msg.innerText = "Please fill out both fields.";
-        return;
-    }
+    if (!apiKey || !password) {         
+        msg.className = "error";         
+        msg.innerText = "Please fill out both fields.";         
+        return;     
+    }      
 
-    try {
-        await encryptAndSaveCookie(COOKIE_NAME, apiKey, password);
-        // Put the key directly into volatile system memory for immediate use
-        decryptedApiKey = apiKey; 
+    try {         
+        await encryptAndSaveCookie(COOKIE_NAME, apiKey, password);         
+        // Put the key directly into volatile system memory for immediate use         
+        decryptedApiKey = apiKey;                   
         
-        document.getElementById("setup-password").value = "";
-        document.getElementById("api-key").value = "";
+        document.getElementById("setup-password").value = "";         
+        document.getElementById("api-key").value = "";         
         
-        await showDashboard();
-    } catch(e) {
-        msg.className = "error";
-        msg.innerText = "Encryption error occurred.";
-    }
+        document.cookie = "CameraBody=" + camera_body + "; path=/; SameSite=Strict";         
+        document.cookie = "CameraLens=" + camera_lens + "; path=/; SameSite=Strict";                   
+        
+        await showDashboard();     
+    } catch(e) {         
+        msg.className = "error";         
+        msg.innerText = "Encryption error occurred.";     
+    } 
 }
+
 
 async function handleUnlock() {
     const password = document.getElementById("unlock-password").value;
