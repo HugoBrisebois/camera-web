@@ -224,6 +224,13 @@ async function read_lens(lens) {
   return null;
 }
 
+// add a function to add more camera bodies and lenses
+
+
+
+
+
+
 
 
 

@@ -13,13 +13,14 @@
 }
 
 body {
-    font-family: 'Segeo UI', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Segoe UI', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: var(--sage-green);
     color: var(--forest-green);
 }
 
 .navbar {
     display: flex;
+    flex-direction: column;
     justify-content: space-between; /*pushes logo to the left, links to right*/
     align-items: center;
     background-color: var(--forest-green);
@@ -40,6 +41,9 @@ body {
 /*nav links wrappre*/
 .nav-links {
     display: flex;
+    flex-wrap: wrap;
+    list-style: none;
+    gap: 15px;
     list-style: none;
 }
 
@@ -61,7 +65,7 @@ body {
 }
 
 #setup-view {
-    width: 100%;
+    width: 90%;
     max-width: 500px;
     margin: 20px auto;
     height: auto;
@@ -72,7 +76,6 @@ body {
     text-align: center;
     border: 1px solid #ccc;
     box-sizing: border-box;
-    border: 1px solid #ccc;
     border-radius: 8px;
     padding: 20px;
     overflow: auto;
@@ -81,7 +84,8 @@ body {
 
 .content {
     display:grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
+    gap: 20px;
     padding: 20px;
     margin: 20px;
 }
@@ -93,21 +97,14 @@ body {
 }
 
 
-.card {
+.card, .card1 {
     background-color: var(--warm-ivory);
     padding: 20px;
-    width: auto;
+    width: 100%;
     border-radius: 10px;
     overflow: hidden;
 }
 
-.card1 {
-    background-color: var(--sage-green);
-    padding: 20px;
-    width: auto;
-    border-radius: 10px;
-    overflow: hidden;
-}
 
 #weather{
     border-radius: 10px;
@@ -124,7 +121,31 @@ body {
     padding: 20px;
     border-radius: 10px;
     width: auto;
+    display: flex;
     flex-direction: column;
     align-items: flex-start;
     overflow: hidden;
+}
+
+.prompt {
+    padding: 20px;
+}
+
+/* making the website responsive to the device and how it is displayed */
+@media screen and (min-width: 768px) {
+    .navbar {
+        flex-direction: row; 
+        justify-content: space-between;
+        padding: 15px 30px;
+    }
+
+    .content {
+        grid-template-columns: 1fr 1fr;
+        margin: 20px;
+    }
+
+    .weather {
+        margin-left: auto;
+        width: auto;
+    }
 }
