@@ -117,12 +117,16 @@ function checkVaultStatus() {
     document.getElementById("dashboard-view").style.display = "none";
 }
 
-async function handleSave() {     
+async function handleSave() {
+    // get the api key values and the master password to unlock it and encrypt it
     const apiKey = document.getElementById("api-key").value;     
-    const password = document.getElementById("setup-password").value;     
+    const password = document.getElementById("setup-password").value;
     
+    // get the initial camera body and camera lens and store it in a variable
     const camera_body = encodeURIComponent(document.getElementById("CameraBody").value);     
     const camera_lens = encodeURIComponent(document.getElementById("CameraLens").value);     
+    
+    // get the html element to then be able to able to display error
     const msg = document.getElementById("setup-message");      
 
     if (!apiKey || !password) {         
