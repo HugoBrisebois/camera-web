@@ -15,6 +15,7 @@ async function FetchWeatherForecast(apiKey, location, URL) {
         document.getElementById("location").textContent = location;
         document.getElementById("temperature").textContent = `${data.current.temp_c}°C`;
         document.getElementById("conditions").textContent = data.current.condition.text;
+        console.log(data);
         return data;
     }
     catch (error) {
@@ -189,7 +190,7 @@ async function showDashboard() {
     cameraContainer.innerHTML = `
       <h3>Your camera body and lens</h3>
       <p><strong>Camera Body:</strong> ${cameraBody ? decodeURIComponent(cameraBody) : 'Not set'}</p>
-      <p><strong>Camera Body:</strong> ${cameraLens ? decodeURIComponent(cameraLens) : 'Not set'}</p>
+      <p><strong>Camera Lens:</strong> ${cameraLens ? decodeURIComponent(cameraLens) : 'Not set'}</p>
     `
 
   }
