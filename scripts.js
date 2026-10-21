@@ -202,7 +202,7 @@ function handleLogOut() {
     checkVaultStatus();
 }
 
-// functions for camera brand in a cookie 
+// functions for storing camera equipment in cookies 
 
 async function read_camera(camera) {
   // store the camera model and put it in a a cookie
@@ -224,13 +224,22 @@ async function read_lens(lens) {
   return null;
 }
 
-// add a function to add more camera bodies and lenses
+// functions to add more camera bodies and lenses
+async function store_camera(name, value) {
+  // store the new camera body in a cookie
+  try {
+    await cookieStore.set({
+      name: name,
+      value: value,
+      path: "/",
+      sameSite: 'lax',
+    });
 
-
-
-
-
-
+    console.log(`Successfully stored cookie: ${name}`);
+  } catch (error){
+    console.error('Failed to store cookie:', error);
+  }
+}
 
 
 
