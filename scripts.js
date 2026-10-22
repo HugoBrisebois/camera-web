@@ -112,22 +112,41 @@ const COOKIE_NAME = "encrypted_api_vault";
 
 // Check cookie presence on page load to direct user to Setup vs Unlock
 function checkVaultStatus() {
+  // if user is already logged in
+  if (decryptedApiKey) {
+    document.getElementById("setup-view").style.display = "none";
+    document.getElementById("unlock-view").style.display = "none";
+    document.getElementById("dashboard-view").style.display = "block";
+    return;
+  }
+  // otherwise, check if vault cookie exists to determine if the user needs to setup or unlock
     const hasCookie = document.cookie.includes(COOKIE_NAME + "=");
     document.getElementById("setup-view").style.display = hasCookie ? "none" : "block";
     document.getElementById("unlock-view").style.display = hasCookie ? "block" : "none";
-    document.getElementById("dashboard-view").style.display = "none";
+    document.getElementById("dashboard-view").style.display = "none"; 
 }
 
+// helper function to cleanly switch between view container divs
+function switchView(activeViewId) {
+  const views = ["setup-view", "unlock-view", "dashboard-view", "Camera-equipment"];
+
+  views.forEach(viewId => {
+    const element = document.getElementById(viewId);
+    if (element) {
+      element.style.display = (viewId === activeViewId) ?  "block" : "none";
+    }
+  });
+}
+
+
 async function handleSave() {
-    // get the api key values and the master password to unlock it and encrypt it
     const apiKey = document.getElementById("api-key").value;     
     const password = document.getElementById("setup-password").value;
     
-    // get the initial camera body and camera lens and store it in a variable
-    const camera_body = encodeURIComponent(document.getElementById("CameraBody").value);     
-    const camera_lens = encodeURIComponent(document.getElementById("CameraLens").value);     
+    // Get the initial camera layout
+    const camera_body = document.getElementById("CameraBody").value;     
+    const camera_lens = document.getElementById("CameraLens").value;     
     
-    // get the html element to then be able to able to display error
     const msg = document.getElementById("setup-message");      
 
     if (!apiKey || !password) {         
@@ -138,16 +157,16 @@ async function handleSave() {
 
     try {         
         await encryptAndSaveCookie(COOKIE_NAME, apiKey, password);         
-        // Put the key directly into volatile system memory for immediate use         
         decryptedApiKey = apiKey;                   
         
         document.getElementById("setup-password").value = "";         
         document.getElementById("api-key").value = "";         
         
-        document.cookie = "CameraBody=" + camera_body + "; path=/; SameSite=Strict";         
-        document.cookie = "CameraLens=" + camera_lens + "; path=/; SameSite=Strict";                   
+        // Save the cookies via standard document.cookie
+        document.cookie = "CameraBody=" + encodeURIComponent(camera_body) + "; path=/; Max-Age=2592000; SameSite=Strict; Secure";         
+        document.cookie = "CameraLens=" + encodeURIComponent(camera_lens) + "; path=/; Max-Age=2592000; SameSite=Strict; Secure";                   
         
-        await showDashboard();     
+        await showDashboard(camera_body, camera_lens);     
     } catch(e) {         
         msg.className = "error";         
         msg.innerText = "Encryption error occurred.";     
@@ -155,12 +174,12 @@ async function handleSave() {
 }
 
 
+
 async function handleUnlock() {
     const password = document.getElementById("unlock-password").value;
     const msg = document.getElementById("unlock-message");
 
     try {
-        // Attempt to decrypt the cookie string
         decryptedApiKey = await getAndDecryptCookie(COOKIE_NAME, password);
         
         if (decryptedApiKey) {
@@ -174,26 +193,28 @@ async function handleUnlock() {
     }
 }
 
-async function showDashboard() {
-    document.getElementById("setup-view").style.display = "none";
-    document.getElementById("unlock-view").style.display = "none";
-    document.getElementById("dashboard-view").style.display = "block";
+async function showDashboard(passedBody = null, passedLens = null) {
+    switchView("dashboard-view");
     
     console.log("Your active API Key is ready for fetch requests:", decryptedApiKey);
     
-    // call the fetchWeatherForecast function with the decrypted API key and location
-    await FetchWeatherForecast(decryptedApiKey, location1, base_url); // Fetch weather data if API key is available
+    // Trigger your API data call
+    await FetchWeatherForecast(decryptedApiKey, location1, base_url); 
     
-    const cameraBody = await read_camera('CameraBody');
-    const cameraLens = await read_lens('CameraLens');
+    // If not passed through arguments, look inside the cookie system
+    const cameraBody = passedBody || await read_camera('CameraBody');
+    const cameraLens = passedLens || await read_lens('CameraLens');
+    
     const cameraContainer = document.getElementById("Camera-equipment");
-    cameraContainer.innerHTML = `
-      <h3>Your camera body and lens</h3>
-      <p><strong>Camera Body:</strong> ${cameraBody ? decodeURIComponent(cameraBody) : 'Not set'}</p>
-      <p><strong>Camera Lens:</strong> ${cameraLens ? decodeURIComponent(cameraLens) : 'Not set'}</p>
-    `
+    if (cameraContainer) {
+        cameraContainer.innerHTML = `
+          <h3>Your camera body and lens</h3>
+          <p><strong>Camera Body:</strong> ${cameraBody ? decodeURIComponent(cameraBody) : 'Not set'}</p>
+          <p><strong>Camera Lens:</strong> ${cameraLens ? decodeURIComponent(cameraLens) : 'Not set'}</p>
+        `;
+    }
+}
 
-  }
 
 function handleLogOut() {
     // Completely clear the key from active browser memory
@@ -239,6 +260,11 @@ async function store_camera(name, value) {
   } catch (error){
     console.error('Failed to store cookie:', error);
   }
+}
+
+// functions for the camera equipment page
+function showCamera() {
+  switchView("Camera-equipment");
 }
 
 

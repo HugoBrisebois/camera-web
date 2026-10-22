@@ -15,7 +15,8 @@
                     <a href="#">MyLogo</a>
                 </div>
                 <ul class="nav-links">
-                    <li><a href="#">Home</a></li>
+                    <li><a href="#" onclick="switchView('dashboard-view')">Home</a></li>
+                    <li><a href="#" inclick="switchView('camera')">Camera Equipment</a></li>
                 </ul>
             </nav>
         </header>
@@ -24,6 +25,8 @@
         <div id="setup-view" class="card"> 
             <h3>Setup</h3>
             <p>Your API key will be encrypted locally in your browser before being saved to a cookie</p>
+
+            <br>
 
             <label for="api-key">API Key</label>
             <input type="password" id="api-key" placeholder="apikey" required>
@@ -40,7 +43,7 @@
 
             <br>
 
-            <label for="CameraLens">Enter your firt lens</label>
+            <label for="CameraLens">Enter your first lens</label>
             <input type="text" id="CameraLens" placeholder="Canon RF 24-105mm f/4L IS USM">
 
             <br>
@@ -83,7 +86,9 @@
                     </table>
                     <p id="weather-error" role="status"></p>
                 </div>
-                <div id="Camera-equipment"></div>
+                <div id="Camera-equipment">
+                    
+                </div>
                 <div id="prompt"></div>
             </div>
         </div>
