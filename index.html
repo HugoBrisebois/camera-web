@@ -15,8 +15,8 @@
                     <a href="#">MyLogo</a>
                 </div>
                 <ul class="nav-links">
-                    <li><a href="#" onclick="switchView('dashboard-view')">Home</a></li>
-                    <li><a href="#" onclick="switchView('camera')">Camera Equipment</a></li>
+                    <li><a href="#" onclick="app.switchView('dashboard-view')">Home</a></li>
+                    <li><a href="#" onclick="app.switchView('camera-view')">Camera Equipment</a></li>
                 </ul>
             </nav>
         </header>
@@ -39,7 +39,7 @@
             <br>
 
             <label for="CameraBody">Enter your first camera</label>
-            <input type="text" id="CameraBody" placeholder="Canon eos R5" optional>
+            <input type="text" id="CameraBody" placeholder="Canon eos R5">
 
             <br>
 
@@ -48,18 +48,18 @@
 
             <br>
 
-            <button onclick="handleSave()">Encrypt & Save to Cookie</button>
+            <button onclick="app.handleSave()">Encrypt & Save to Cookie</button>
             <p id="setup-message"></p>
         </div>
 
         <div id="unlock-view" class="card" style="display: none;">
             <h3>Unlock your workspace</h3>
-            <p>An encryted cookie was found. enter you password to unlock:</p>
+            <p>An encrypted cookie was found. Enter your password to unlock:</p>
 
             <label for="unlock-password">Enter your master password:</label>
             <input type="password" id="unlock-password" placeholder="Enter password">
 
-            <button onclick="handleUnlock()">Unlock Key</button>
+            <button onclick="app.handleUnlock()">Unlock Key</button>
             <p id="unlock-message"></p>
         </div>
 
@@ -87,18 +87,20 @@
                     <p id="weather-error" role="status"></p>
                 </div>
                 <div id="Camera-equipment">
-                    
+                    <!-- Dynamic camera gear will render here -->
                 </div>
                 <div id="prompt"></div>
             </div>
         </div>
+
         <div id="camera-view" class="card1" style="display: none;"> 
+            <h3>Camera Equipment Management</h3>
             <div id="Camera_body">
-                <label for="camera-body">Enter a new camera body</label>
-                <input type="text" id="camera-body" placeholder="Canon eos R5 body">
+                <label for="camera-body-input">Enter a new camera body</label>
+                <input type="text" id="camera-body-input" placeholder="Canon eos R5 body">
             </div>
             <div id="Camera_lens">
-
+                <!-- Add more lenses here if needed -->
             </div>
         </div>
         
