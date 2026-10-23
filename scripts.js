@@ -1,127 +1,138 @@
-// cookie encryption service
+// crypto service
 class CryptoService {
-  static async deriveKey(password, salt) {
-    const encoder = new TextEncoder();
-    const passwordKey = await window.crypto.subtle.importKey(
-      "raw",
-      encoder.encode(password),
-      { name: "PBKDF2"},
-      false,
-      ["deriveKey"]
-    );
-    return await window.crypto.subtle.deriveKey(
-      {name: "PBKDF2", salt, iteration:100000, hash: "SHA-256"},
-      passwordKey,
-      {name: "AES-GCM", length: 256},
-      false,
-      ["encrypt", "decrypt"]
-    );
-  }
+    static async deriveKey(password, salt) {
+        const encoder = new TextEncoder();
+        const passwordKey = await window.crypto.subtle.importKey(
+            "raw",
+            encoder.encode(password),
+            { name: "PBKDF2" },
+            false,
+            ["deriveKey"]
+        );
 
-  static async encrypt(rawText, password) {
-    const salt = window.crypto.getRandomValues(new Uint8Array(16));
-    const iv = window.crypto.getRandomValues(new Uint8Array(12));
-    const cryptoKey = await this.deriveKey(password,salt);
-
-    const encryotedBuffer = await window.crypto.subtle.encrypt(
-      {name: "AES-GCM", iv},
-      cryptoKey,
-      new TextEncoder().encode(rawText)
-    );
-
-    const ciphertextByes = new Uint8Array(encryptedBuffer);
-    const combined = new Uint8Array(salt.length + iv.length + ciphertextBytes.length);
-    combined.set(salt, 0);
-    combined.set(iv, salt.length);
-    combined.set(ciphertextBytes, salt.length + iv.length);
-
-    return btoa(String.fromCharCode(...combined));
-  }
-
-  static async decrypt(base64String, password) {
-    try {
-      const combined = new Uint8Array(arob(base64String).split("").map(c => c.charCodeAt(0)));
-      const salt = combined.slice(0, 16);
-      const iv = combined.slice(16, 28);
-      const ciphertext = combined.slice(28);
-
-      const cryptoKey = await this.deriveKey(password, salt);
-      const decryptedBuffer = await window.crypto.subtle.decrypt(
-        {name: "AES-GCM", iv},
-        cryptoKey,
-        ciphertext
-      );
-
-      return new TextDecoder().decode(decrypedBuffer);
-    } catch (err) {
-      throw new Error("Invalid password or corrupted cookie data");
+        return await window.crypto.subtle.deriveKey(
+            { name: "PBKDF2", salt, iterations: 100000, hash: "SHA-256" },
+            passwordKey,
+            { name: "AES-GCM", length: 256 },
+            false,
+            ["encrypt", "decrypt"]
+        );
     }
-  }
+
+    static async encrypt(rawText, password) {
+        const salt = window.crypto.getRandomValues(new Uint8Array(16));
+        const iv = window.crypto.getRandomValues(new Uint8Array(12));
+        const cryptoKey = await this.deriveKey(password, salt);
+        
+        const encryptedBuffer = await window.crypto.subtle.encrypt(
+            { name: "AES-GCM", iv },
+            cryptoKey,
+            new TextEncoder().encode(rawText)
+        );
+
+        const ciphertextBytes = new Uint8Array(encryptedBuffer);
+        const combined = new Uint8Array(salt.length + iv.length + ciphertextBytes.length);
+        combined.set(salt, 0);
+        combined.set(iv, salt.length);
+        combined.set(ciphertextBytes, salt.length + iv.length);
+
+        return btoa(String.fromCharCode(...combined));
+    }
+
+    static async decrypt(base64String, password) {
+        try {
+            const combined = new Uint8Array(atob(base64String).split("").map(c => c.charCodeAt(0)));
+            const salt = combined.slice(0, 16);
+            const iv = combined.slice(16, 28);
+            const ciphertext = combined.slice(28);
+
+            const cryptoKey = await this.deriveKey(password, salt);
+            const decryptedBuffer = await window.crypto.subtle.decrypt(
+                { name: "AES-GCM", iv },
+                cryptoKey,
+                ciphertext
+            );
+
+            return new TextDecoder().decode(decryptedBuffer);
+        } catch (err) {
+            throw new Error("Invalid password or corrupted cookie data.");
+        }
+    }
 }
 
-// cookie services and storage services
+// storage service
 class StorageService {
-  static setCookie(name, value, days = 30) {
-    const maxAge = days * 86400;
-    document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}; path=/ max-age=$maxAge; Secure;SameSite=Strict`;
-  }
-
-  static getAllCookies() {
-    const cookies = {};
-    if (document.cookie) {
-      document.cookie.split("; ").forEach(cookie => {
-        const [key, ...valueParts] = cookie.split("=");
-        cookies[key] = decodeURIComponent(valueParts.join("="));
-      });
+    static setCookie(name, value, days = 30) {
+        const maxAge = days * 86400;
+        document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}; path=/; max-age=${maxAge}; Secure; SameSite=Strict`;
     }
-    return cookies;
-  }
+
+    static getCookie(name) {
+        const matches = document.cookie.match(new RegExp('(?:^|; )' + encodeURIComponent(name) + '=([^;]*)'));
+        return matches ? decodeURIComponent(matches[1]) : null;
+    }
 }
 
-// api service
 
+//  api service
 class ApiService {
-  constructor(baseUrl= "https://api.weatherapi.com/v1/") {
-    this.baseUrl = baseUrl;
-  }
-
-  async fetchWeather() {
-    try {
-      const url = `${this.baseUrl}current.json?key=${encodeURICompenent(apiKey)}&=${encodeURIComponent(location)}&aqi=no`;
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`https error. status: ${response.status}`);
-
-      return await response.json();
-    } catch (error) {
-      console.error("Weather fetch failed", error);
-      throw error;
+    constructor(baseUrl = "https://api.weatherapi.com/v1/") {
+        this.baseUrl = baseUrl;
     }
-  }
+
+    async fetchWeather(apiKey, location) {
+        const url = `${this.baseUrl}current.json?key=${encodeURIComponent(apiKey)}&q=${encodeURIComponent(location)}&aqi=no`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`HTTP error. Status: ${response.status}`);
+        return await response.json();
+    }
 }
 
 
-// App manager
+// app manager
 class AppManager {
-  constructor() {
-    this.cookieName = "encrypted_api_vault";
-    this.devryptedapiKey = null;
-    this.ApiService = new ApiService();
-    this.testLocation = "montreal";
-  }
-  init() {
-    this.checkVaultStatus();
-  }
-  checkVaultStatus() {
-    if (this.decryptedApiKey) {
-      this.switchView("dashboard-view");
-      return;
+    constructor() {
+        this.cookieName = "encrypted_api_vault";
+        this.decryptedApiKey = null;
+        this.apiService = new ApiService();
+        this.testLocation = "montreal";
     }
-    
-    const hasCookie = StorageService.getAllCookies(this.cookieName) !== null;
-    this.switchView(hasCookie ? "unlock-view": "setup-view");
-  }
 
-  switchView(activeViewId) {
+    init() {
+        console.log("App initializing...");
+        this.setupEventListeners();
+        this.checkVaultStatus();
+    }
+
+    setupEventListeners() {
+        // Navigation links
+        document.getElementById("nav-home")?.addEventListener("click", (e) => {
+            e.preventDefault();
+            this.switchView(this.decryptedApiKey ? "dashboard-view" : "unlock-view");
+        });
+
+        document.getElementById("nav-camera")?.addEventListener("click", (e) => {
+            e.preventDefault();
+            this.switchView("camera-view");
+        });
+
+        // Form buttons
+        document.getElementById("save-btn")?.addEventListener("click", () => this.handleSave());
+        document.getElementById("unlock-btn")?.addEventListener("click", () => this.handleUnlock());
+    }
+
+    checkVaultStatus() {
+        const cookieValue = StorageService.getCookie(this.cookieName);
+        console.log("Vault cookie found:", !!cookieValue);
+
+        if (cookieValue) {
+            this.switchView("unlock-view");
+        } else {
+            this.switchView("setup-view");
+        }
+    }
+
+    switchView(activeViewId) {
         const views = ["setup-view", "unlock-view", "dashboard-view", "camera-view"];
         views.forEach(viewId => {
             const element = document.getElementById(viewId);
@@ -131,88 +142,77 @@ class AppManager {
         });
     }
 
-  async handleSave() {
-    const apiKey = document.getElementById("api-key").value;
-    const password = document.getElementById("setup-password").value;
-    const cameraBody = document.getElementById("CameraBody").value;
-    const cameraLens = document.getElementById("CameraLens").value;
-    const msg = document.getElementById("setup-message");
+    async handleSave() {
+        const apiKey = document.getElementById("api-key").value;
+        const password = document.getElementById("setup-password").value;
+        const cameraBody = document.getElementById("CameraBody").value;
+        const cameraLens = document.getElementById("CameraLens").value;
+        const msg = document.getElementById("setup-message");
 
-    if (!apiKey || !password) {
-      msg.className = "error";
-      msg.innerText = "Please fiil out both fields";
-      return;
+        if (!apiKey || !password) {
+            msg.className = "error";
+            msg.innerText = "Please fill out both fields.";
+            return;
+        }
+
+        try {
+            const encryptedKey = await CryptoService.encrypt(apiKey, password);
+            StorageService.setCookie(this.cookieName, encryptedKey);
+            StorageService.setCookie("CameraBody", cameraBody);
+            StorageService.setCookie("CameraLens", cameraLens);
+
+            this.decryptedApiKey = apiKey;
+            await this.loadDashboard(cameraBody, cameraLens);
+        } catch (e) {
+            console.error(e);
+            msg.className = "error";
+            msg.innerText = "Encryption error occurred.";
+        }
     }
 
-    try {
-      const encryptedKey = apiKey;
-      StorageService.setCookie(this.cookieName, encryptedKey);
-      StorageService.setCookie("CameraBody", cameraBody);
-      StorageService.setCookie("CameraLens", cameraLens);
+    async handleUnlock() {
+        const password = document.getElementById("unlock-password").value;
+        const msg = document.getElementById("unlock-message");
+        const encryptedCookie = StorageService.getCookie(this.cookieName);
 
-      this.decryptedApiKey = apiKey;
-      document.getElementById("setup-password").value = "";
-      document,getElementById("api-key").value = "";
-      
-      await this.loadDashboard(cameraBody, cameraLens);
-    } catch (e) {
-      msg.className = "error";
-      msg.innerText = "Encryption error occurred";
-    }
-  }
+        try {
+            this.decryptedApiKey = await CryptoService.decrypt(encryptedCookie, password);
+            const cameraBody = StorageService.getCookie("CameraBody");
+            const cameraLens = StorageService.getCookie("CameraLens");
 
-  async handleUnlock() {
-    const password = document.getElementById("unlock-password").value;
-    const msg = document.getElementById("unlock-message");
-    const encryptedCookie = StorageService.getAllCookies(this.cookieName);
-
-    try {
-      this.decryptedApiKey = await CryptoService.decrypt(encryptedCookie, password);
-      document.getElementById("unlock-password").value = "";
-
-      const cameraBody = StorageService.getAllCookies("CameraBody");
-      const cameraLens = StorageService.getAllCookies("CameraLens");
-
-      await this.loadDashboard(cameraBody, cameraLens);
-    } catch (err) {
-      msg.className = "error";
-      msg.innerText = "incorrect password. try again";
-    }
-  }
-
-  async loadDashboard(cameraBody, cameraLens) {
-    this.switchView("dashboard-view");
-
-    // fetch weather
-    try {
-      const data = await this.ApiService.fetchWeather(this.decryptedApiKey, this.testLocation);
-      document.getElementById("location").textContent = this.testLocation;
-      document.getElementById("temperature").textContent = `${data.current.temp_c}`;
-      document.getElementById("conditions").textContent = data.current.codition.text;
-
-      
-    } catch (e) {
-      document.getElementById("weather-error").textContent = "Unable to load weather data";
+            await this.loadDashboard(cameraBody, cameraLens);
+        } catch (err) {
+            msg.className = "error";
+            msg.innerText = "Incorrect Password. Try again.";
+        }
     }
 
-    // render camera gear
-    const cameraContainer = document.getElementById("Camera-equipement");
-    if (cameraContainer) {
-      cameraContainer.innerHTML = `
-      <h3>Your Camera Equipement</h3>
-      <p><strong>Camera Body:</strong> ${cameraBody ? cameraBody : 'Not set'}</p>
-      <p><strong>Camera Lens:</strong> ${cameraLens ? cameraLens : 'Not set'}</p>
-      `;
-    }
-  }
+    async loadDashboard(cameraBody, cameraLens) {
+        this.switchView("dashboard-view");
 
-  handleLogOut() {
-    this.decryptedApiKey = null;
-    document.getElementById("unlock-message").innerText = "";
-    this.checkVaultStatus();
-  }
+        try {
+            const data = await this.apiService.fetchWeather(this.decryptedApiKey, this.testLocation);
+            document.getElementById("location").textContent = this.testLocation;
+            document.getElementById("temperature").textContent = `${data.current.temp_c}°C`;
+            document.getElementById("conditions").textContent = data.current.condition.text;
+        } catch (e) {
+            document.getElementById("weather-error").textContent = "Unable to load weather data.";
+        }
+
+        const cameraContainer = document.getElementById("Camera-equipment");
+        if (cameraContainer) {
+            cameraContainer.innerHTML = `
+              <h3>Your Camera Equipment</h3>
+              <p><strong>Camera Body:</strong> ${cameraBody || 'Not set'}</p>
+              <p><strong>Camera Lens:</strong> ${cameraLens || 'Not set'}</p>
+            `;
+        }
+    }
 }
 
 // initialization
-const app = new AppManager();
-document.addEventListener("DOMContentLoaded", () => app.init());
+
+window.app = new AppManager();
+document.addEventListener("DOMContentLoaded", () => {
+    window.app.init();
+});

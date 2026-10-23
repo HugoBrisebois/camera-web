@@ -15,43 +15,34 @@
                     <a href="#">MyLogo</a>
                 </div>
                 <ul class="nav-links">
-                    <li><a href="#" onclick="app.switchView('dashboard-view')">Home</a></li>
-                    <li><a href="#" onclick="app.switchView('camera-view')">Camera Equipment</a></li>
+                    <li><a href="#" id="nav-home">Home</a></li>
+                    <li><a href="#" id="nav-camera">Camera Equipment</a></li>
                 </ul>
             </nav>
         </header>
 
-
+        <!-- SETUP VIEW -->
         <div id="setup-view" class="card"> 
             <h3>Setup</h3>
             <p>Your API key will be encrypted locally in your browser before being saved to a cookie</p>
 
-            <br>
-
             <label for="api-key">API Key</label>
             <input type="password" id="api-key" placeholder="apikey" required>
-
-            <br>
 
             <label for="setup-password">Create a Master Password</label>
             <input type="password" id="setup-password" placeholder="Choose a strong password" required>
 
-            <br>
-
             <label for="CameraBody">Enter your first camera</label>
             <input type="text" id="CameraBody" placeholder="Canon eos R5">
-
-            <br>
 
             <label for="CameraLens">Enter your first lens</label>
             <input type="text" id="CameraLens" placeholder="Canon RF 24-105mm f/4L IS USM">
 
-            <br>
-
-            <button onclick="app.handleSave()">Encrypt & Save to Cookie</button>
+            <button id="save-btn">Encrypt & Save to Cookie</button>
             <p id="setup-message"></p>
         </div>
 
+        <!-- UNLOCK VIEW -->
         <div id="unlock-view" class="card" style="display: none;">
             <h3>Unlock your workspace</h3>
             <p>An encrypted cookie was found. Enter your password to unlock:</p>
@@ -59,11 +50,11 @@
             <label for="unlock-password">Enter your master password:</label>
             <input type="password" id="unlock-password" placeholder="Enter password">
 
-            <button onclick="app.handleUnlock()">Unlock Key</button>
+            <button id="unlock-btn">Unlock Key</button>
             <p id="unlock-message"></p>
         </div>
 
-
+        <!-- DASHBOARD VIEW -->
         <div id="dashboard-view" class="card1" style="display:none;">
             <div class="content">
                 <div id="weather">
@@ -93,16 +84,14 @@
             </div>
         </div>
 
+        <!-- CAMERA VIEW -->
         <div id="camera-view" class="card1" style="display: none;"> 
             <h3>Camera Equipment Management</h3>
             <div id="Camera_body">
                 <label for="camera-body-input">Enter a new camera body</label>
                 <input type="text" id="camera-body-input" placeholder="Canon eos R5 body">
             </div>
-            <div id="Camera_lens">
-                <!-- Add more lenses here if needed -->
-            </div>
+            <div id="Camera_lens"></div>
         </div>
-        
     </body>
 </html>

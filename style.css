@@ -108,7 +108,54 @@ body {
     text-align: center;
 }
 
+.card label {
+    display: block;
+    margin-top: 12px;
+    margin-bottom: 5px;
+    font-weight: 600;
+    text-align: left;
+}
 
+.card input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.card button {
+    margin-top: 20px;
+    width: 100%;
+    padding: 12px;
+    background-color: var(--forest-green);
+    color: var(--warm-ivory);
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.card button:hover {
+    background-color: var(--sandstone);
+    color: var(--forest-green);
+}
+
+
+/* error message formating*/
+.error {
+    color: #b30000;
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+/* dashboard &equipement */
+
+.card1 {
+    width: 100%;
+}
 
 #weather{
     border-radius: 10px;
