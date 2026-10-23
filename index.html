@@ -16,7 +16,7 @@
                 </div>
                 <ul class="nav-links">
                     <li><a href="#" onclick="switchView('dashboard-view')">Home</a></li>
-                    <li><a href="#" inclick="switchView('camera')">Camera Equipment</a></li>
+                    <li><a href="#" onclick="switchView('camera')">Camera Equipment</a></li>
                 </ul>
             </nav>
         </header>
@@ -92,14 +92,15 @@
                 <div id="prompt"></div>
             </div>
         </div>
-
-        <div class="camera"> 
+        <div id="camera-view" class="card1" style="display: none;"> 
             <div id="Camera_body">
-
+                <label for="camera-body">Enter a new camera body</label>
+                <input type="text" id="camera-body" placeholder="Canon eos R5 body">
             </div>
             <div id="Camera_lens">
 
             </div>
         </div>
+        
     </body>
 </html>
