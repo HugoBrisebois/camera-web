@@ -110,8 +110,49 @@ class AppManager {
         this.gearCookieName = "camera_equipment_list";
         this.decryptedApiKey = null;
         this.apiService = new ApiService();
-        this.testLocation = "montreal";
+
+        // load saved location from cookies or default to montreal
+        this.currentLocation = StorageService.getCookie(this.locationCookieName) || "montreal";
         this.equipmentList = [];
+        this.editingIndex = null;
+    }
+
+    // handle changing for weather location updates
+    async handleLocationUpdate() {
+        const input = document.getElementById("location-input");
+        const newLocation = input.value.trim();
+        const errorEL = document.getElementById("weather-error");
+
+        if (!newLocation) {
+            errorEL.textContent = "Please enter a valid city name";
+            return;
+        }
+
+        errorEL.textContent = "";
+        this.currentLocation = newLocation;
+        StorageService.setCookie(this.locationCookieName, newLocation);
+
+        input.value = "";
+        await this.fetchAndDisplayWeather();
+
+    }
+
+    async fetchAndDisplayWeather() {
+        const errorEl = document.getElementById("weather-error");
+        errorEl.textContent = "";
+
+        try {
+            const data = await this.apiService.fetchWeather(this.decryptedApiKey, this.currentLocation);
+            document.getElementById("location").textContent = data.location.name + ", " + data.location.country;
+            document.getElementById("temperature").textContent = `${data.current.temp_c}C`;
+            document.getElementById("conditions").textContent = data.current.condition.text;
+        } catch (e) {
+            console.error("weather fetch failed:", e);
+            errorEl.textContent = `unable to load weather data for "${this.currentLocation}"`;
+            document.getElementById("location").textContent = "N/A";
+            document.getElementById("temperature").textContent = "N/A";
+            document.getElementById("conditions").textContent = "N/A";
+        }
     }
 
     init() {
@@ -142,7 +183,10 @@ class AppManager {
         // Form buttons
         document.getElementById("save-btn")?.addEventListener("click", () => this.handleSave());
         document.getElementById("unlock-btn")?.addEventListener("click", () => this.handleUnlock());
-        document.getElementById("add-gear-btn")?.addEventListener("click", () => this.handleAddGear());
+        document.getElementById("add-gear-btn")?.addEventListener("click", () => this.handleAddOrUpdateGear());
+
+        // listen for weather location updates
+        document.getElementById("update-location-btn")?.addEventListener("click", () => this.handleLocationUpdate());
     }
 
     checkVaultStatus() {
@@ -210,10 +254,11 @@ class AppManager {
         }
     }
 
-    handleAddGear() {
+    handleAddOrUpdateGear() {
         const bodyInput = document.getElementById("new-camera-body");
         const lensInput = document.getElementById("new-camera-lens");
         const msg = document.getElementById("gear-message");
+        const actionBtn = document.getElementById("add-gear-btn");
 
         const body = bodyInput.value.trim();
         const lens = lensInput.value.trim();
@@ -224,8 +269,25 @@ class AppManager {
             return;
         }
 
-        // Add to array and save in JSON cookie
-        this.equipmentList.push({ body: body || "Not specified", lens: lens || "Not specified" });
+        if (this.editingIndex !== null) {
+            // update existing equipement entry
+            this.equipmentList[this.editingIndex] = {
+                body: body || "Not specified",
+                lens: lens || "Not Specified"
+            };
+            this.editingindex = null;
+            actionBtn.textContent = "add equipment";
+            msg.innerText = " Equipment updated successfully";
+        } else {
+            // add brand new equipment entry
+            this.equipmentList.push({
+                body: body || "Not Specified",
+                lens: lens || "Not Specified"
+            });
+            msg.innerText = "equipment added successfully";
+        }
+
+        // save changes to storage
         StorageService.setJSONCookie(this.gearCookieName, this.equipmentList);
 
         // Clear inputs and refresh view
@@ -235,6 +297,37 @@ class AppManager {
         msg.innerText = "Equipment added successfully!";
         
         this.renderEquipmentManagementView();
+        this.loadDashboard();
+    }
+
+    // load item data into inputs to edit
+    startEdit(index) {
+        const item = this.equipmentList[index];
+        document.getElementById("new-camera-body").value = item.body;
+        document.getElementById("new-camera-lens").value = item.lens;
+
+        this.editingIndex = index;
+        document.getElementById("add-gear-btn").textContent = "Upadte equipment";
+
+        // scroll smoothly back up to the form inputs
+        document.getElementById("new-camera-body").focus();
+    }
+
+    // delete item from list
+    deleteGear(index) {
+        this.equipmentList.splice(index, 1);
+        StorageService.setJSONCookie(this.gearCookieName, this.equipmentList);
+
+        // if the user is actively editing the deleted item reset the form
+        if (this.editingIdex === index) {
+            this.editingIndex = null;
+            document.getElementById("new-camra-body").value = "";
+            document.getElementById("new-camera-lens").value = "";
+            document.getElementById("add-gear-btn").textContent = "Add Equipement";
+        }
+
+        this.renderEquipmentManagementView();
+        this.loadDashboard();
     }
 
     renderEquipmentManagementView() {
@@ -246,9 +339,19 @@ class AppManager {
             return;
         }
 
-        let html = "<h4>Your Equipment Inventory:</h4><ul>";
+        let html = "<h4>Your Equipment Inventory:</h4><ul style='list-style: none; padding: 0;'>";
         this.equipmentList.forEach((item, index) => {
-            html += `<li><strong>Body:</strong> ${item.body} | <strong>Lens:</strong> ${item.lens}</li>`;
+            html += `
+                <li style="background: white; margin-bottom: 10px; padding: 10px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong>Body:</strong> ${item.body} <br>
+                        <strong>Lens:</strong> ${item.lens}
+                    </div>
+                    <div>
+                        <button onclick="window.app.startEdit(${index})" style="padding: 5px 10px; margin-right: 5px; cursor: pointer;">Edit</button>
+                        <button onclick="window.app.deleteGear(${index})" style="padding: 5px 10px; background-color: #b30000; color: white; border: none; border-radius: 3px; cursor: pointer;">Delete</button>
+                    </div>
+                </li>`;
         });
         html += "</ul>";
         container.innerHTML = html;
@@ -258,14 +361,7 @@ class AppManager {
         this.switchView("dashboard-view");
 
         // Fetch Weather
-        try {
-            const data = await this.apiService.fetchWeather(this.decryptedApiKey, this.testLocation);
-            document.getElementById("location").textContent = this.testLocation;
-            document.getElementById("temperature").textContent = `${data.current.temp_c}°C`;
-            document.getElementById("conditions").textContent = data.current.condition.text;
-        } catch (e) {
-            document.getElementById("weather-error").textContent = "Unable to load weather data.";
-        }
+        await this.fetchAndDisplayWeather();
 
         // Render Equipment summary on Dashboard
         const cameraContainer = document.getElementById("Camera-equipment");
