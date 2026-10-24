@@ -157,6 +157,47 @@ body {
     width: 100%;
 }
 
+.card2 {
+    max-width: 500px;
+    background-color: var(--warm-ivory);
+    color: var(--forest-green);
+    text-align: center;
+    align-items: center;
+    border-radius: 10px;
+    padding: 10px;
+    margin: 10px;
+    display: flex;
+    justify-content: center;
+}
+
+.card2 button {
+    margin-top: 20px;
+    width: 100%;
+    padding: 12px;
+    background-color: var(--forest-green);
+    color: var(--warm-ivory);
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.card2 button:hover {
+    background-color: var(--sandstone);
+    color: var(--forest-green);
+}
+
+.card2 input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+
 #weather{
     border-radius: 10px;
     background-color: white;
@@ -167,7 +208,6 @@ body {
 }
 
 #Camera-equipment {
-    margin: 10px;
     background-color: white;
     padding: 20px;
     border-radius: 10px;
