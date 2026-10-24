@@ -87,18 +87,24 @@
         <!-- CAMERA VIEW -->
         <div id="camera-view"  style="display: none;"> 
             <div class="card2">
-                <div id="Camera_body" class="card1">
+                <div id="new-camera-body" class="card1">
                         
-                        <h3>Camera Equipment Management</h3>
-
-                        <br>
+                        <h3>Manage Camera Equipement</h3>
 
                         <label for="camera-body-input">Enter a new camera body</label>
-                        <input type="text" id="camera-body-input" placeholder="Canon eos R5 body">
-                        <br>
-                        <button id="camera-btn">Save Camera body</button>
+                        <input type="text" id="camera-body-input" placeholder="e.g., Canon eos R5 body">
+
+                        <label for="new-camera-lens">Camera Lens</label>
+                        <input type="text" id="new-camera-lens" placeholder="e.g., FE 50mm f/1.8">
+
+                        <button id="add-gear-btn">Add Equipment</button>
+                        <p id="gear-message"></p>
+
+                        <hr style="margin: 20px 0;">
+                        <div id="full-gear-list">
+        
+                        </div>
                     </div>
-                <div id="Camera_lens"></div>
             </div>
         </div>
     </body>

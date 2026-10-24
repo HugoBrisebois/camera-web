@@ -71,10 +71,25 @@ class StorageService {
         const matches = document.cookie.match(new RegExp('(?:^|; )' + encodeURIComponent(name) + '=([^;]*)'));
         return matches ? decodeURIComponent(matches[1]) : null;
     }
+
+    // Helper to store objects/arrays easily as JSON
+    static setJSONCookie(name, obj, days = 30) {
+        this.setCookie(name, JSON.stringify(obj), days);
+    }
+
+    // Helper to retrieve objects/arrays
+    static getJSONCookie(name) {
+        const value = this.getCookie(name);
+        try {
+            return value ? JSON.parse(value) : null;
+        } catch (e) {
+            console.error("Failed to parse JSON cookie:", e);
+            return null;
+        }
+    }
 }
 
-
-//  api service
+// api service
 class ApiService {
     constructor(baseUrl = "https://api.weatherapi.com/v1/") {
         this.baseUrl = baseUrl;
@@ -88,20 +103,27 @@ class ApiService {
     }
 }
 
-
 // app manager
 class AppManager {
     constructor() {
         this.cookieName = "encrypted_api_vault";
+        this.gearCookieName = "camera_equipment_list";
         this.decryptedApiKey = null;
         this.apiService = new ApiService();
         this.testLocation = "montreal";
+        this.equipmentList = [];
     }
 
     init() {
         console.log("App initializing...");
         this.setupEventListeners();
+        this.loadStoredEquipment();
         this.checkVaultStatus();
+    }
+
+    loadStoredEquipment() {
+        // Load existing gear array from cookies if available
+        this.equipmentList = StorageService.getJSONCookie(this.gearCookieName) || [];
     }
 
     setupEventListeners() {
@@ -114,17 +136,17 @@ class AppManager {
         document.getElementById("nav-camera")?.addEventListener("click", (e) => {
             e.preventDefault();
             this.switchView("camera-view");
+            this.renderEquipmentManagementView();
         });
 
         // Form buttons
         document.getElementById("save-btn")?.addEventListener("click", () => this.handleSave());
         document.getElementById("unlock-btn")?.addEventListener("click", () => this.handleUnlock());
+        document.getElementById("add-gear-btn")?.addEventListener("click", () => this.handleAddGear());
     }
 
     checkVaultStatus() {
         const cookieValue = StorageService.getCookie(this.cookieName);
-        console.log("Vault cookie found:", !!cookieValue);
-
         if (cookieValue) {
             this.switchView("unlock-view");
         } else {
@@ -158,11 +180,15 @@ class AppManager {
         try {
             const encryptedKey = await CryptoService.encrypt(apiKey, password);
             StorageService.setCookie(this.cookieName, encryptedKey);
-            StorageService.setCookie("CameraBody", cameraBody);
-            StorageService.setCookie("CameraLens", cameraLens);
+
+            // Add initial gear if provided
+            if (cameraBody || cameraLens) {
+                this.equipmentList.push({ body: cameraBody || "Not set", lens: cameraLens || "Not set" });
+                StorageService.setJSONCookie(this.gearCookieName, this.equipmentList);
+            }
 
             this.decryptedApiKey = apiKey;
-            await this.loadDashboard(cameraBody, cameraLens);
+            await this.loadDashboard();
         } catch (e) {
             console.error(e);
             msg.className = "error";
@@ -177,19 +203,61 @@ class AppManager {
 
         try {
             this.decryptedApiKey = await CryptoService.decrypt(encryptedCookie, password);
-            const cameraBody = StorageService.getCookie("CameraBody");
-            const cameraLens = StorageService.getCookie("CameraLens");
-
-            await this.loadDashboard(cameraBody, cameraLens);
+            await this.loadDashboard();
         } catch (err) {
             msg.className = "error";
             msg.innerText = "Incorrect Password. Try again.";
         }
     }
 
-    async loadDashboard(cameraBody, cameraLens) {
+    handleAddGear() {
+        const bodyInput = document.getElementById("new-camera-body");
+        const lensInput = document.getElementById("new-camera-lens");
+        const msg = document.getElementById("gear-message");
+
+        const body = bodyInput.value.trim();
+        const lens = lensInput.value.trim();
+
+        if (!body && !lens) {
+            msg.className = "error";
+            msg.innerText = "Please enter at least a camera body or lens.";
+            return;
+        }
+
+        // Add to array and save in JSON cookie
+        this.equipmentList.push({ body: body || "Not specified", lens: lens || "Not specified" });
+        StorageService.setJSONCookie(this.gearCookieName, this.equipmentList);
+
+        // Clear inputs and refresh view
+        bodyInput.value = "";
+        lensInput.value = "";
+        msg.className = "";
+        msg.innerText = "Equipment added successfully!";
+        
+        this.renderEquipmentManagementView();
+    }
+
+    renderEquipmentManagementView() {
+        const container = document.getElementById("full-gear-list");
+        if (!container) return;
+
+        if (this.equipmentList.length === 0) {
+            container.innerHTML = "<p>No equipment stored yet.</p>";
+            return;
+        }
+
+        let html = "<h4>Your Equipment Inventory:</h4><ul>";
+        this.equipmentList.forEach((item, index) => {
+            html += `<li><strong>Body:</strong> ${item.body} | <strong>Lens:</strong> ${item.lens}</li>`;
+        });
+        html += "</ul>";
+        container.innerHTML = html;
+    }
+
+    async loadDashboard() {
         this.switchView("dashboard-view");
 
+        // Fetch Weather
         try {
             const data = await this.apiService.fetchWeather(this.decryptedApiKey, this.testLocation);
             document.getElementById("location").textContent = this.testLocation;
@@ -199,19 +267,25 @@ class AppManager {
             document.getElementById("weather-error").textContent = "Unable to load weather data.";
         }
 
+        // Render Equipment summary on Dashboard
         const cameraContainer = document.getElementById("Camera-equipment");
         if (cameraContainer) {
-            cameraContainer.innerHTML = `
-              <h3>Your Camera Equipment</h3>
-              <p><strong>Camera Body:</strong> ${cameraBody || 'Not set'}</p>
-              <p><strong>Camera Lens:</strong> ${cameraLens || 'Not set'}</p>
-            `;
+            if (this.equipmentList.length === 0) {
+                cameraContainer.innerHTML = "<h3>Your Camera Equipment</h3><p>No equipment added yet.</p>";
+                return;
+            }
+
+            let gearHtml = "<h3>Your Camera Equipment</h3><ul>";
+            this.equipmentList.forEach(item => {
+                gearHtml += `<li><strong>Body:</strong> ${item.body} — <strong>Lens:</strong> ${item.lens}</li>`;
+            });
+            gearHtml += "</ul>";
+            cameraContainer.innerHTML = gearHtml;
         }
     }
 }
 
 // initialization
-
 window.app = new AppManager();
 document.addEventListener("DOMContentLoaded", () => {
     window.app.init();
