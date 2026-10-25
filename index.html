@@ -63,7 +63,7 @@
                         <label for="location-input" style="font-size: 14px; display: block; margin-bottom: 5px;">Change Location:</label>
                         <div style="display: flex; gap: 8px;">
                             <input type="text" id="location-input" placeholder="e.g., Paris, Tokyo, NewYork" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                            <button id="update-location" style="padding: 8px 15px; background-color: var(--forest-green); color: var(--warm-ivory); border:none; border-radius: 4px; cursor: pointer;">Search</button>
+                            <button id="update-location-btn" style="padding: 8px 15px; background-color: var(--forest-green); color: var(--warm-ivory); border:none; border-radius: 4px; cursor: pointer;">Search</button>
                         </div>
                     </div>
 
@@ -90,26 +90,27 @@
                     <!-- Dynamic camera gear will render here -->
                 </div>
             </div>
+        </div>
 
         <!-- CAMERA VIEW -->
-    <div id="camera-view" class="card2" style="display: none;"> 
-        <h3>Manage Camera Equipment</h3>
-        <p>Add new gear to your collection:</p>
+        <div id="camera-view" class="card" style="display: none;"> 
+            <h3>Manage Camera Equipment</h3>
+            <p>Add new gear to your collection:</p>
 
-        <label for="new-camera-body">Camera Body</label>
-        <input type="text" id="new-camera-body" placeholder="e.g., Sony A7IV">
+            <label for="new-camera-body">Camera Body</label>
+            <input type="text" id="new-camera-body" placeholder="e.g., Sony A7IV">
 
-        <label for="new-camera-lens">Camera Lens</label>
-        <input type="text" id="new-camera-lens" placeholder="e.g., FE 50mm f/1.8">
+            <label for="new-camera-lens">Camera Lens</label>
+            <input type="text" id="new-camera-lens" placeholder="e.g., FE 50mm f/1.8">
 
-        <button id="add-gear-btn">Add Equipment</button>
-        <p id="gear-message"></p>
+            <button id="add-gear-btn">Add Equipment</button>
+            <p id="gear-message"></p>
 
-        <hr style="margin: 20px 0;">
+            <hr style="margin: 20px 0;">
 
-        <div id="full-gear-list">
-            <!-- Rendered dynamically -->
+            <div id="full-gear-list">
+                <!-- Rendered dynamically -->
+            </div>
         </div>
-    </div>
     </body>
 </html>

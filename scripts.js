@@ -60,8 +60,9 @@ class CryptoService {
     }
 }
 
-// storage service
+// storage service (Updated with localStorage support)
 class StorageService {
+    // --- Secure Cookies for Sensitive Data (API Key Vault) ---
     static setCookie(name, value, days = 30) {
         const maxAge = days * 86400;
         document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}; path=/; max-age=${maxAge}; Secure; SameSite=Strict`;
@@ -72,18 +73,25 @@ class StorageService {
         return matches ? decodeURIComponent(matches[1]) : null;
     }
 
-    // Helper to store objects/arrays easily as JSON
-    static setJSONCookie(name, obj, days = 30) {
-        this.setCookie(name, JSON.stringify(obj), days);
+    // --- LocalStorage for Non-Sensitive Data (Equipment & Location) ---
+    static setLocal(key, value) {
+        localStorage.setItem(key, value);
     }
 
-    // Helper to retrieve objects/arrays
-    static getJSONCookie(name) {
-        const value = this.getCookie(name);
+    static getLocal(key) {
+        return localStorage.getItem(key);
+    }
+
+    static setJSONLocal(key, obj) {
+        localStorage.setItem(key, JSON.stringify(obj));
+    }
+
+    static getJSONLocal(key) {
+        const value = localStorage.getItem(key);
         try {
             return value ? JSON.parse(value) : null;
         } catch (e) {
-            console.error("Failed to parse JSON cookie:", e);
+            console.error("Failed to parse JSON from localStorage:", e);
             return null;
         }
     }
@@ -107,34 +115,33 @@ class ApiService {
 class AppManager {
     constructor() {
         this.cookieName = "encrypted_api_vault";
-        this.gearCookieName = "camera_equipment_list";
+        this.gearStorageKey = "camera_equipment_list";
+        this.locationStorageKey = "shooting_location";
         this.decryptedApiKey = null;
         this.apiService = new ApiService();
 
-        // load saved location from cookies or default to montreal
-        this.currentLocation = StorageService.getCookie(this.locationCookieName) || "montreal";
+        // Load saved location from localStorage or default to montreal
+        this.currentLocation = StorageService.getLocal(this.locationStorageKey) || "montreal";
         this.equipmentList = [];
         this.editingIndex = null;
     }
 
-    // handle changing for weather location updates
     async handleLocationUpdate() {
         const input = document.getElementById("location-input");
         const newLocation = input.value.trim();
-        const errorEL = document.getElementById("weather-error");
+        const errorEl = document.getElementById("weather-error");
 
         if (!newLocation) {
-            errorEL.textContent = "Please enter a valid city name";
+            errorEl.textContent = "Please enter a valid city name";
             return;
         }
 
-        errorEL.textContent = "";
+        errorEl.textContent = "";
         this.currentLocation = newLocation;
-        StorageService.setCookie(this.locationCookieName, newLocation);
+        StorageService.setLocal(this.locationStorageKey, newLocation);
 
         input.value = "";
         await this.fetchAndDisplayWeather();
-
     }
 
     async fetchAndDisplayWeather() {
@@ -144,11 +151,11 @@ class AppManager {
         try {
             const data = await this.apiService.fetchWeather(this.decryptedApiKey, this.currentLocation);
             document.getElementById("location").textContent = data.location.name + ", " + data.location.country;
-            document.getElementById("temperature").textContent = `${data.current.temp_c}C`;
+            document.getElementById("temperature").textContent = `${data.current.temp_c}°C`;
             document.getElementById("conditions").textContent = data.current.condition.text;
         } catch (e) {
             console.error("weather fetch failed:", e);
-            errorEl.textContent = `unable to load weather data for "${this.currentLocation}"`;
+            errorEl.textContent = `Unable to load weather data for "${this.currentLocation}"`;
             document.getElementById("location").textContent = "N/A";
             document.getElementById("temperature").textContent = "N/A";
             document.getElementById("conditions").textContent = "N/A";
@@ -163,12 +170,11 @@ class AppManager {
     }
 
     loadStoredEquipment() {
-        // Load existing gear array from cookies if available
-        this.equipmentList = StorageService.getJSONCookie(this.gearCookieName) || [];
+        // Load existing gear array from localStorage
+        this.equipmentList = StorageService.getJSONLocal(this.gearStorageKey) || [];
     }
 
     setupEventListeners() {
-        // Navigation links
         document.getElementById("nav-home")?.addEventListener("click", (e) => {
             e.preventDefault();
             this.switchView(this.decryptedApiKey ? "dashboard-view" : "unlock-view");
@@ -180,12 +186,9 @@ class AppManager {
             this.renderEquipmentManagementView();
         });
 
-        // Form buttons
         document.getElementById("save-btn")?.addEventListener("click", () => this.handleSave());
         document.getElementById("unlock-btn")?.addEventListener("click", () => this.handleUnlock());
         document.getElementById("add-gear-btn")?.addEventListener("click", () => this.handleAddOrUpdateGear());
-
-        // listen for weather location updates
         document.getElementById("update-location-btn")?.addEventListener("click", () => this.handleLocationUpdate());
     }
 
@@ -225,10 +228,9 @@ class AppManager {
             const encryptedKey = await CryptoService.encrypt(apiKey, password);
             StorageService.setCookie(this.cookieName, encryptedKey);
 
-            // Add initial gear if provided
             if (cameraBody || cameraLens) {
                 this.equipmentList.push({ body: cameraBody || "Not set", lens: cameraLens || "Not set" });
-                StorageService.setJSONCookie(this.gearCookieName, this.equipmentList);
+                StorageService.setJSONLocal(this.gearStorageKey, this.equipmentList);
             }
 
             this.decryptedApiKey = apiKey;
@@ -270,60 +272,52 @@ class AppManager {
         }
 
         if (this.editingIndex !== null) {
-            // update existing equipement entry
             this.equipmentList[this.editingIndex] = {
                 body: body || "Not specified",
                 lens: lens || "Not Specified"
             };
-            this.editingindex = null;
-            actionBtn.textContent = "add equipment";
-            msg.innerText = " Equipment updated successfully";
+            this.editingIndex = null;
+            actionBtn.textContent = "Add Equipment";
+            msg.className = "";
+            msg.innerText = "Equipment updated successfully!";
         } else {
-            // add brand new equipment entry
             this.equipmentList.push({
                 body: body || "Not Specified",
                 lens: lens || "Not Specified"
             });
-            msg.innerText = "equipment added successfully";
+            msg.className = "";
+            msg.innerText = "Equipment added successfully!";
         }
 
-        // save changes to storage
-        StorageService.setJSONCookie(this.gearCookieName, this.equipmentList);
+        // Save changes to localStorage
+        StorageService.setJSONLocal(this.gearStorageKey, this.equipmentList);
 
-        // Clear inputs and refresh view
         bodyInput.value = "";
         lensInput.value = "";
-        msg.className = "";
-        msg.innerText = "Equipment added successfully!";
         
         this.renderEquipmentManagementView();
         this.loadDashboard();
     }
 
-    // load item data into inputs to edit
     startEdit(index) {
         const item = this.equipmentList[index];
         document.getElementById("new-camera-body").value = item.body;
         document.getElementById("new-camera-lens").value = item.lens;
 
         this.editingIndex = index;
-        document.getElementById("add-gear-btn").textContent = "Upadte equipment";
-
-        // scroll smoothly back up to the form inputs
+        document.getElementById("add-gear-btn").textContent = "Update Equipment";
         document.getElementById("new-camera-body").focus();
     }
 
-    // delete item from list
     deleteGear(index) {
         this.equipmentList.splice(index, 1);
-        StorageService.setJSONCookie(this.gearCookieName, this.equipmentList);
+        StorageService.setJSONLocal(this.gearStorageKey, this.equipmentList);
 
-        // if the user is actively editing the deleted item reset the form
-        if (this.editingIdex === index) {
+        if (this.editingIndex === index) {
             this.editingIndex = null;
-            document.getElementById("new-camra-body").value = "";
+            document.getElementById("new-camera-body").value = "";
             document.getElementById("new-camera-lens").value = "";
-            document.getElementById("add-gear-btn").textContent = "Add Equipement";
+            document.getElementById("add-gear-btn").textContent = "Add Equipment";
         }
 
         this.renderEquipmentManagementView();
@@ -360,10 +354,8 @@ class AppManager {
     async loadDashboard() {
         this.switchView("dashboard-view");
 
-        // Fetch Weather
         await this.fetchAndDisplayWeather();
 
-        // Render Equipment summary on Dashboard
         const cameraContainer = document.getElementById("Camera-equipment");
         if (cameraContainer) {
             if (this.equipmentList.length === 0) {
