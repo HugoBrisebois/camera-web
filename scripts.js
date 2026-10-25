@@ -354,8 +354,13 @@ class AppManager {
     async loadDashboard() {
         this.switchView("dashboard-view");
 
+        // Ensure equipment is freshly loaded from localStorage
+        this.loadStoredEquipment();
+
+        // Fetch Weather
         await this.fetchAndDisplayWeather();
 
+        // Render Equipment summary on Dashboard as clean cards
         const cameraContainer = document.getElementById("Camera-equipment");
         if (cameraContainer) {
             if (this.equipmentList.length === 0) {
@@ -363,11 +368,15 @@ class AppManager {
                 return;
             }
 
-            let gearHtml = "<h3>Your Camera Equipment</h3><ul>";
+            let gearHtml = "<h3>Your Camera Equipment</h3><div style='display: flex; flex-direction: column; gap: 10px; width: 100%; margin-top: 10px;'>";
             this.equipmentList.forEach(item => {
-                gearHtml += `<li><strong>Body:</strong> ${item.body} — <strong>Lens:</strong> ${item.lens}</li>`;
+                gearHtml += `
+                    <div style="background: #f9f9f9; padding: 12px; border-radius: 6px; border: 1px solid #e0e0e0;">
+                        📷 <strong>Body:</strong> ${item.body} <br>
+                        🔍 <strong>Lens:</strong> ${item.lens}
+                    </div>`;
             });
-            gearHtml += "</ul>";
+            gearHtml += "</div>";
             cameraContainer.innerHTML = gearHtml;
         }
     }

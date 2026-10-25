@@ -157,6 +157,18 @@ body {
     width: 100%;
 }
 
+.card, .card1, #camera-view {
+    transition: opacity 0.3s ease-in-out;
+}
+
+.success-message {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 10px;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
 .card2 {
     max-width: 500px;
     background-color: var(--warm-ivory);
